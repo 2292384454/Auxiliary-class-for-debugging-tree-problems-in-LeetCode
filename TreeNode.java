@@ -17,7 +17,7 @@ public class TreeNode {
     /**
      * 根据输入的层次遍历数组创建二叉树
      *
-     * @param nums 输入的Integer数组，要求nums数组的长度为2^n-1(n=0,1,2,3...)
+     * @param nums 输入的Integer数组，要求树只有最后一行可以不满，其余行必须是满的，空节点用null表示
      * @return 返回根据nums数组创建的二叉树
      */
     public static TreeNode constructTree(Integer[] nums) {
