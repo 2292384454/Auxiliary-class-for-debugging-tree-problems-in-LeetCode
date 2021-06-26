@@ -1,5 +1,9 @@
+package leetcode.editor.cn;
+
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * @author huangkaiyan
@@ -14,6 +18,72 @@ public class TreeNode {
         val = x;
     }
 
+    // Encodes a tree to a single string.
+    private String serialize(TreeNode root) {
+        if (root == null) return null;
+        String ans = "[";
+        LinkedList<String> array = new LinkedList<>();
+        Queue<TreeNode> queue = new LinkedList<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            if (node != null) {
+                array.add(String.valueOf(node.val));
+                queue.add(node.left);
+                queue.add(node.right);
+            } else {
+                array.add("null");
+            }
+        }
+        while (("null").equals(array.getLast())) {
+            array.removeLast();
+        }
+        ans += String.join(",", array);
+        ans += "]";
+        System.out.println(ans);
+        return ans;
+    }
+
+    // Decodes your encoded data to tree.
+    private static TreeNode deserialize(Integer[] nums) {
+        if (nums.length == 0) {
+            return null;
+        }
+        TreeNode root;
+        Queue<Integer> numsQueue = new LinkedList<>(Arrays.asList(nums));
+        Queue<TreeNode> queue = new LinkedList<>();
+        // 创建一个根节点
+        root = new TreeNode(numsQueue.remove());
+        queue.add(root);
+        TreeNode cur;
+        // 记录当前行节点的数量（注意不一定是2的幂，而是上一行中非空节点的数量乘2）
+        int lineNodeNum = 2;
+        // 记录当前行中数字在数组中的开始位置
+        int startIndex = 1;
+        while (!numsQueue.isEmpty()) {
+            // 只有最后一行可以不满，其余行必须是满的
+            for (int i = startIndex; i < startIndex + lineNodeNum; i = i + 2) {
+                cur = queue.remove();
+                for (int j = 0; j < 2; j++) {
+                    if (numsQueue.isEmpty()) {
+                        return root;
+                    }
+                    Integer val = numsQueue.remove();
+                    if (j == 0 && val != null) {
+                        cur.left = new TreeNode(val);
+                        queue.add(cur.left);
+                    } else if (val != null) {
+                        cur.right = new TreeNode(val);
+                        queue.add(cur.right);
+                    }
+                }
+            }
+            startIndex += lineNodeNum;
+            lineNodeNum = queue.size() * 2;
+        }
+        return root;
+    }
+
     /**
      * 根据输入的层次遍历数组创建二叉树
      *
@@ -21,46 +91,11 @@ public class TreeNode {
      * @return 返回根据nums数组创建的二叉树
      */
     public static TreeNode constructTree(Integer[] nums) {
-        if (nums.length == 0) return new TreeNode(0);
-        Deque<TreeNode> nodeQueue = new LinkedList<>();
-        // 创建一个根节点
-        TreeNode root = new TreeNode(nums[0]);
-        nodeQueue.offer(root);
-        TreeNode cur;
-        // 记录当前行节点的数量（注意不一定是2的幂，而是上一行中非空节点的数量乘2）
-        int lineNodeNum = 2;
-        // 记录当前行中数字在数组中的开始位置
-        int startIndex = 1;
-        // 记录数组中剩余的元素的数量
-        int restLength = nums.length - 1;
+        return deserialize(nums);
+    }
 
-        while (restLength > 0) {
-            // 只有最后一行可以不满，其余行必须是满的
-//            // 若输入的数组的数量是错误的，直接跳出程序
-//            if (restLength < lineNodeNum) {
-//                System.out.println("Wrong Input!");
-//                return new TreeNode(0);
-//            }
-            for (int i = startIndex; i < startIndex + lineNodeNum; i = i + 2) {
-                // 说明已经将nums中的数字用完，此时应停止遍历，并可以直接返回root
-                if (i == nums.length) return root;
-                cur = nodeQueue.poll();
-                if (nums[i] != null) {
-                    cur.left = new TreeNode(nums[i]);
-                    nodeQueue.offer(cur.left);
-                }
-                // 同上，说明已经将nums中的数字用完，此时应停止遍历，并可以直接返回root
-                if (i + 1 == nums.length) return root;
-                if (nums[i + 1] != null) {
-                    cur.right = new TreeNode(nums[i + 1]);
-                    nodeQueue.offer(cur.right);
-                }
-            }
-            startIndex += lineNodeNum;
-            restLength -= lineNodeNum;
-            lineNodeNum = nodeQueue.size() * 2;
-        }
-
-        return root;
+    @Override
+    public String toString() {
+        return serialize(this);
     }
 }
